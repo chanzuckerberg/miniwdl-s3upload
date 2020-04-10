@@ -64,7 +64,8 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
             for fn in files:
                 # upload to S3
                 abs_fn = os.path.join(dn, fn)
-                s3uri = os.path.join(s3prefix, *run_id[1:], dn[(len(links_dir) + 1) :], fn)
+                # s3uri = os.path.join(s3prefix, *run_id[1:], dn[(len(links_dir) + 1) :], fn)
+                s3uri = os.path.join(s3prefix, os.path.basename(fn))
                 s3cp(logger, abs_fn, s3uri)
                 # record in _uploaded_files (keyed by inode, so that it can be found from any
                 # symlink or hardlink)
@@ -133,9 +134,7 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
 
 
 def s3cp(logger, fn, s3uri):
-    # shell out to `aws s3 cp` instead of calling boto3 directly, to minimize contention added to
-    # miniwdl's GIL
-    cmd = ["aws", "s3", "cp", fn, s3uri, "--follow-symlinks", "--only-show-errors"]
+    cmd = ["s3parcp", fn, s3uri]
     logger.debug(" ".join(cmd))
     rslt = subprocess.run(cmd, stderr=subprocess.PIPE)
     if rslt.returncode != 0:
