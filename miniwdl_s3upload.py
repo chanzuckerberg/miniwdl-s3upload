@@ -110,7 +110,7 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
     def rewriter(fn):
         try:
             return _uploaded_files[inode(fn)]
-        except:
+        except Exception:
             logger.warning(
                 _(
                     "output file wasn't uploaded to S3; keeping local path in outputs.s3.json",
@@ -130,7 +130,7 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
     with open(fn, "w") as outfile:
         json.dump(outputs_s3_json, outfile, indent=2)
         outfile.write("\n")
-    s3cp(logger, fn, os.path.join(s3prefix, "outputs.s3.json"))
+    s3cp(logger, fn, os.environ.get("WDL_OUTPUT_URI", os.path.join(s3prefix, "outputs.s3.json")))
 
 
 def s3cp(logger, fn, s3uri):
